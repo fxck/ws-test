@@ -528,11 +528,15 @@
           return false;
         }
 
+        // Determine wsOutputType based on subscription name
+        const isUpdateSubscription = subscriptionName.includes('update-subscription');
+        const wsOutputType = isUpdateSubscription ? 'updateStream' : 'listStream';
+
         const url = `${this.backendUrl}/api/rest/public/${entityName}/search`;
         const payload = {
           subscriptionName: subscriptionName,
           receiverId: this.receiverId,
-          wsOutputType: 'listStream',
+          wsOutputType: wsOutputType,
           search: [
             { name: 'clientId', operator: 'eq', value: this.clientId },
             ...searchParams
@@ -542,6 +546,7 @@
 
         try {
           this.log(`📤 POST /${entityName}/search [${subscriptionName}]`, 'http');
+          this.log(`📋 Payload: ${JSON.stringify(payload, null, 2)}`, 'info');
           const response = await fetch(url, {
             method: 'POST',
             headers: {
