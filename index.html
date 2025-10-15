@@ -201,6 +201,7 @@
       <h2>⚙️ Controls</h2>
       <div class="controls">
         <button onclick="app.simulateBackground()" class="secondary">🌙 Simulate Background (60s)</button>
+        <button onclick="app.startProcessTimer()" class="secondary">⏱️ Toggle Process Timer</button>
         <button onclick="app.disconnect()" class="danger">Disconnect</button>
         <button onclick="app.reset()" class="secondary">Reset All</button>
       </div>
@@ -253,6 +254,7 @@
 
     <div class="panel">
       <h2>📝 Event Log</h2>
+      <button onclick="app.copyLogs()" class="secondary" style="float: right; margin-left: 5px;">Copy Logs</button>
       <button onclick="app.clearLog()" class="secondary" style="float: right;">Clear Log</button>
       <div id="log" class="log"></div>
     </div>
@@ -267,6 +269,7 @@
       clientId: null,
       backendUrl: 'https://api.app-prg1.zerops.io',
       connectedAt: null,
+      rawLogs: [],
       subscriptions: {
         'service-stack-list': {
           name: 'service-stack__service-stack-base__list-subscription',
@@ -328,15 +331,30 @@
         const entry = document.createElement('div');
         entry.className = `log-entry ${type}`;
         const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
-        entry.textContent = `[${timestamp}] ${message}`;
+        const logLine = `[${timestamp}] ${message}`;
+        entry.textContent = logLine;
         logDiv.appendChild(entry);
         logDiv.scrollTop = logDiv.scrollHeight;
         console.log(`[${type.toUpperCase()}] ${message}`);
+
+        // Store raw log
+        this.rawLogs.push(logLine);
       },
 
       clearLog() {
         document.getElementById('log').innerHTML = '';
+        this.rawLogs = [];
         this.log('Log cleared', 'info');
+      },
+
+      async copyLogs() {
+        const logsText = this.rawLogs.join('\n');
+        try {
+          await navigator.clipboard.writeText(logsText);
+          this.log('📋 Logs copied to clipboard', 'info');
+        } catch (err) {
+          this.log('❌ Failed to copy logs: ' + err.message, 'error');
+        }
       },
 
       updateDisplay() {
@@ -771,13 +789,20 @@
           }, 100);
         });
 
+        // Add small delay to ensure WebSocket is fully ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Subscribe to all entities
         app.log('🤖 Auto-subscribing to all entities', 'info');
         await app.subscribeAll();
 
-        // Start process timer
-        app.log('🤖 Auto-starting process timer', 'info');
-        await app.startProcessTimer();
+        // Start process timer (if enabled via env)
+        if (window.ENV && window.ENV.ENABLE_PROCESS_TIMER !== 'false') {
+          app.log('🤖 Auto-starting process timer', 'info');
+          await app.startProcessTimer();
+        } else {
+          app.log('ℹ️ Process timer disabled (set ENABLE_PROCESS_TIMER=true to enable)', 'info');
+        }
 
         app.log('✅ Auto-start complete!', 'info');
       }

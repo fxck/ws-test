@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 3000;
 const BACKEND_URL = process.env.BACKEND_URL || 'https://api.app-prg1.zerops.io';
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN || '';
 const CLIENT_ID = process.env.CLIENT_ID || '';
+const ENABLE_PROCESS_TIMER = process.env.ENABLE_PROCESS_TIMER !== 'false'; // defaults to true unless explicitly set to 'false'
 
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/index.html') {
@@ -24,7 +25,8 @@ const server = http.createServer((req, res) => {
     window.ENV = {
       BACKEND_URL: '${BACKEND_URL}',
       ACCESS_TOKEN: '${ACCESS_TOKEN}',
-      CLIENT_ID: '${CLIENT_ID}'
+      CLIENT_ID: '${CLIENT_ID}',
+      ENABLE_PROCESS_TIMER: '${ENABLE_PROCESS_TIMER}'
     };
     `
       );
@@ -53,9 +55,10 @@ server.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
   console.log('');
   console.log('📝 Configuration:');
-  console.log(`   Backend URL:   ${BACKEND_URL}`);
-  console.log(`   Access Token:  ${ACCESS_TOKEN ? `${ACCESS_TOKEN.substring(0, 20)}...` : '❌ Not set'}`);
-  console.log(`   Client ID:     ${CLIENT_ID || '❌ Not set'}`);
+  console.log(`   Backend URL:          ${BACKEND_URL}`);
+  console.log(`   Access Token:         ${ACCESS_TOKEN ? `${ACCESS_TOKEN.substring(0, 20)}...` : '❌ Not set'}`);
+  console.log(`   Client ID:            ${CLIENT_ID || '❌ Not set'}`);
+  console.log(`   Process Timer:        ${ENABLE_PROCESS_TIMER ? '✅ Enabled' : '❌ Disabled'}`);
   console.log('');
 
   if (!ACCESS_TOKEN || !CLIENT_ID) {
