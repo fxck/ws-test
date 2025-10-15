@@ -392,6 +392,10 @@ services:
     type: nodejs@20
     buildFromGit: https://github.com/fxck/ws-test
     enableSubdomainAccess: true
+    envSecrets:
+      ACCESS_TOKEN: <your-token>
+      CLIENT_ID: <your-client-id>
+
 ```
 
 **2. Set environment variables in Zerops UI:**
