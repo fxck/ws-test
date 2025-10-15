@@ -198,20 +198,8 @@
     <h1>🧪 Zerops WebSocket Subscription Test</h1>
 
     <div class="panel">
-      <h2>⚙️ Configuration</h2>
-      <label>Backend URL:</label>
-      <input id="backendUrl" type="text" value="https://app.zerops.io" />
-
-      <label>Access Token:</label>
-      <input id="accessToken" type="text" placeholder="Get from localStorage: zef_access_token" />
-
-      <label>Client ID:</label>
-      <input id="clientId" type="text" placeholder="Get from Redux DevTools or API response" />
-
+      <h2>⚙️ Controls</h2>
       <div class="controls">
-        <button onclick="app.connect()">1️⃣ Connect WebSocket</button>
-        <button onclick="app.subscribeAll()">2️⃣ Subscribe All Entities</button>
-        <button onclick="app.startProcessTimer()">3️⃣ Start Process Timer (30s)</button>
         <button onclick="app.simulateBackground()" class="secondary">🌙 Simulate Background (60s)</button>
         <button onclick="app.disconnect()" class="danger">Disconnect</button>
         <button onclick="app.reset()" class="secondary">Reset All</button>
@@ -277,7 +265,7 @@
       wsToken: null,
       accessToken: null,
       clientId: null,
-      backendUrl: null,
+      backendUrl: 'https://api.app-prg1.zerops.io',
       connectedAt: null,
       subscriptions: {
         'service': {
@@ -401,11 +389,8 @@
       },
 
       async getWebSocketToken() {
-        this.backendUrl = document.getElementById('backendUrl').value;
-        this.accessToken = document.getElementById('accessToken').value;
-
         if (!this.accessToken) {
-          alert('❌ Please enter access token');
+          this.log('❌ Access token not configured', 'error');
           return null;
         }
 
@@ -517,9 +502,8 @@
       },
 
       async subscribe(entityName, subscriptionName, searchParams = []) {
-        this.clientId = document.getElementById('clientId').value;
         if (!this.clientId) {
-          alert('❌ Please enter client ID');
+          this.log('❌ Client ID not configured', 'error');
           return false;
         }
 
@@ -708,21 +692,54 @@
     // Initialize from environment variables if available
     if (window.ENV) {
       if (window.ENV.BACKEND_URL) {
-        document.getElementById('backendUrl').value = window.ENV.BACKEND_URL;
+        app.backendUrl = window.ENV.BACKEND_URL;
       }
       if (window.ENV.ACCESS_TOKEN) {
-        document.getElementById('accessToken').value = window.ENV.ACCESS_TOKEN;
+        app.accessToken = window.ENV.ACCESS_TOKEN;
         app.log('✅ Access token loaded from environment', 'info');
       }
       if (window.ENV.CLIENT_ID) {
-        document.getElementById('clientId').value = window.ENV.CLIENT_ID;
+        app.clientId = window.ENV.CLIENT_ID;
         app.log('✅ Client ID loaded from environment', 'info');
       }
     }
 
     // Initial display
     app.updateDisplay();
-    app.log('🚀 Test app loaded. Configure settings and click "Connect WebSocket"', 'info');
+    app.log('🚀 Test app loaded', 'info');
+
+    // Auto-start if credentials are available
+    async function autoStart() {
+      if (app.accessToken && app.clientId) {
+        app.log('🤖 Auto-starting: credentials detected', 'info');
+
+        // Connect WebSocket
+        await app.connect();
+
+        // Wait for connection to be established
+        await new Promise(resolve => {
+          const checkConnection = setInterval(() => {
+            if (app.ws && app.ws.readyState === WebSocket.OPEN) {
+              clearInterval(checkConnection);
+              resolve();
+            }
+          }, 100);
+        });
+
+        // Subscribe to all entities
+        app.log('🤖 Auto-subscribing to all entities', 'info');
+        await app.subscribeAll();
+
+        // Start process timer
+        app.log('🤖 Auto-starting process timer', 'info');
+        await app.startProcessTimer();
+
+        app.log('✅ Auto-start complete!', 'info');
+      }
+    }
+
+    // Run auto-start after a short delay to let the page settle
+    setTimeout(autoStart, 500);
   </script>
 </body>
 </html>
