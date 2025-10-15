@@ -1,0 +1,22 @@
+zerops:
+  - setup: ws-test
+    build:
+      base: nodejs@22
+      buildCommands:
+        - npm install
+      deployFiles:
+        - server.js
+        - index.html
+        - package.json
+    run:
+      base: nodejs@22
+      ports:
+        - port: 3000
+          httpSupport: true
+      envVariables:
+        PORT: 3000
+        BACKEND_URL: https://app.zerops.io
+        # Set these in Zerops dashboard UI:
+        # ACCESS_TOKEN: <your-token>
+        # CLIENT_ID: <your-client-id>
+      start: node server.js

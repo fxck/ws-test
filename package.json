@@ -1,0 +1,17 @@
+{
+  "name": "zerops-websocket-test",
+  "version": "1.0.0",
+  "description": "Test harness for Zerops WebSocket subscription lifecycle",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "websocket",
+    "test",
+    "zerops"
+  ],
+  "author": "",
+  "license": "MIT"
+}
