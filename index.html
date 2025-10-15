@@ -268,29 +268,50 @@
       backendUrl: 'https://api.app-prg1.zerops.io',
       connectedAt: null,
       subscriptions: {
-        'service': {
-          name: 'service__list-subscription',
-          entityType: 'service',
+        'service-stack-list': {
+          name: 'service-stack__service-stack-base__list-subscription',
+          entityType: 'service-stack',
           sent: null,
           lastMessage: null,
           count: 0
         },
-        'project': {
+        'service-stack-update': {
+          name: 'service-stack__service-stack-base__update-subscription',
+          entityType: 'service-stack',
+          sent: null,
+          lastMessage: null,
+          count: 0
+        },
+        'project-list': {
           name: 'project__project-base__list-subscription',
           entityType: 'project',
           sent: null,
           lastMessage: null,
           count: 0
         },
-        'notification': {
-          name: 'notification__list-subscription',
+        'project-update': {
+          name: 'project__project-base__update-subscription',
+          entityType: 'project',
+          sent: null,
+          lastMessage: null,
+          count: 0
+        },
+        'notification-update': {
+          name: 'notification__notification-base__update-subscription',
           entityType: 'notification',
           sent: null,
           lastMessage: null,
           count: 0
         },
-        'process': {
+        'process-list': {
           name: 'process__list-subscription',
+          entityType: 'process',
+          sent: null,
+          lastMessage: null,
+          count: 0
+        },
+        'process-update': {
+          name: 'process__update-subscription',
           entityType: 'process',
           sent: null,
           lastMessage: null,
@@ -501,7 +522,7 @@
         }
       },
 
-      async subscribe(entityName, subscriptionName, searchParams = []) {
+      async subscribe(entityName, subscriptionName, searchParams = [], additionalPayload = {}) {
         if (!this.clientId) {
           this.log('❌ Client ID not configured', 'error');
           return false;
@@ -512,11 +533,11 @@
           subscriptionName: subscriptionName,
           receiverId: this.receiverId,
           wsOutputType: 'listStream',
-          disableOutput: true,
           search: [
             { name: 'clientId', operator: 'eq', value: this.clientId },
             ...searchParams
-          ]
+          ],
+          ...additionalPayload
         };
 
         try {
@@ -555,7 +576,7 @@
 
       async subscribeAll() {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-          alert('❌ Please connect WebSocket first!');
+          this.log('❌ WebSocket not connected', 'error');
           return;
         }
 
@@ -563,17 +584,39 @@
         this.log('Subscribing to all entities...', 'info');
         this.log('═══════════════════════════════════════', 'info');
 
-        await this.subscribe('service', 'service__list-subscription');
+        // Service Stack - list subscription (only clientId filter)
+        await this.subscribe('service-stack', 'service-stack__service-stack-base__list-subscription');
         await new Promise(resolve => setTimeout(resolve, 100));
 
+        // Service Stack - update subscription (only clientId filter)
+        await this.subscribe('service-stack', 'service-stack__service-stack-base__update-subscription');
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Project - list subscription (only clientId filter)
         await this.subscribe('project', 'project__project-base__list-subscription');
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        await this.subscribe('notification', 'notification__list-subscription');
+        // Project - update subscription (only clientId filter)
+        await this.subscribe('project', 'project__project-base__update-subscription');
         await new Promise(resolve => setTimeout(resolve, 100));
 
+        // Notification - update subscription (only clientId filter, with sort)
+        await this.subscribe('notification', 'notification__notification-base__update-subscription', [], {
+          sort: [{ name: 'created', ascending: false }]
+        });
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Process - list subscription (with status and actionName filters)
         await this.subscribe('process', 'process__list-subscription', [
-          { name: 'status', operator: 'in', value: ['RUNNING', 'PENDING'] }
+          { name: 'status', operator: 'in', value: ['RUNNING', 'PENDING'] },
+          { name: 'actionName', operator: 'ne', value: 'instanceGroup.create' }
+        ]);
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Process - update subscription (with status filters)
+        await this.subscribe('process', 'process__update-subscription', [
+          { name: 'status', operator: 'in', value: ['RUNNING', 'PENDING', 'FINISHED'] },
+          { name: 'actionName', operator: 'ne', value: 'instanceGroup.create' }
         ]);
 
         this.log('═══════════════════════════════════════', 'info');
@@ -590,24 +633,21 @@
         }
 
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-          alert('❌ Please connect WebSocket first!');
+          this.log('❌ WebSocket not connected', 'error');
           return;
         }
 
-        this.log('⏱️ Starting process timer (re-subscribe every 30s)', 'info');
+        this.log('⏱️ Starting process timer (re-subscribe every 160s)', 'info');
 
-        // Immediate first subscription
-        await this.subscribe('process', 'process__list-subscription', [
-          { name: 'status', operator: 'in', value: ['RUNNING', 'PENDING'] }
-        ]);
-
-        // Then every 30 seconds
+        // Immediate first subscription already done in subscribeAll
+        // Then every 160 seconds (matching the real app)
         this.processTimerInterval = setInterval(async () => {
           this.log('⏱️ Process timer tick - re-subscribing...', 'info');
           await this.subscribe('process', 'process__list-subscription', [
-            { name: 'status', operator: 'in', value: ['RUNNING', 'PENDING'] }
+            { name: 'status', operator: 'in', value: ['RUNNING', 'PENDING'] },
+            { name: 'actionName', operator: 'ne', value: 'instanceGroup.create' }
           ]);
-        }, 30000);
+        }, 160000);
       },
 
       disconnect() {

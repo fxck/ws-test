@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/fxck/www/zerops-migrate-legacy-alt/apps/zerops/src/modules/core/project-base/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
