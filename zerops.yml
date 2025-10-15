@@ -15,5 +15,5 @@ zerops:
           httpSupport: true
       envVariables:
         PORT: 3000
-        BACKEND_URL: https://app.zerops.io
+        BACKEND_URL: https://api.app-prg1.zerops.io
       start: node server.js
