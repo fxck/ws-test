@@ -298,7 +298,7 @@
         },
         'notification-update': {
           name: 'notification__notification-base__update-subscription',
-          entityType: 'notification',
+          entityType: 'user-notification',
           sent: null,
           lastMessage: null,
           count: 0
@@ -601,7 +601,7 @@
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Notification - update subscription (only clientId filter, with sort)
-        await this.subscribe('notification', 'notification__notification-base__update-subscription', [], {
+        await this.subscribe('user-notification', 'notification__notification-base__update-subscription', [], {
           sort: [{ name: 'created', ascending: false }]
         });
         await new Promise(resolve => setTimeout(resolve, 100));
