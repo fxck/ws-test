@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
-const BACKEND_URL = process.env.BACKEND_URL || 'https://app.zerops.io';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://api.app-prg1.zerops.io';
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN || '';
 const CLIENT_ID = process.env.CLIENT_ID || '';
 
