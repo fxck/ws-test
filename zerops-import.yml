@@ -1,11 +1,10 @@
 project:
   name: websocket-test
-  tags:
-    - test
-    - debugging
-
 services:
-  - hostname: ws-test
+  - hostname: test
     type: nodejs@20
-    buildFromGit: https://github.com/your-org/zerops-migrate-legacy@main
+    buildFromGit: https://github.com/fxck/ws-test
     enableSubdomainAccess: true
+    envSecrets:
+      ACCESS_TOKEN: <your-token>
+      CLIENT_ID: <your-client-id>

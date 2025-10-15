@@ -385,12 +385,13 @@ You can deploy this test app to Zerops itself to test in a production-like envir
 **1. Import the service:**
 
 ```yaml
-# Use the included zerops.yml
 project:
   name: websocket-test
 services:
-  - hostname: ws-test
+  - hostname: test
     type: nodejs@20
+    buildFromGit: https://github.com/fxck/ws-test
+    enableSubdomainAccess: true
 ```
 
 **2. Set environment variables in Zerops UI:**

@@ -1,5 +1,5 @@
 zerops:
-  - setup: ws-test
+  - setup: test
     build:
       base: nodejs@22
       buildCommands:
@@ -16,7 +16,4 @@ zerops:
       envVariables:
         PORT: 3000
         BACKEND_URL: https://app.zerops.io
-        # Set these in Zerops dashboard UI:
-        # ACCESS_TOKEN: <your-token>
-        # CLIENT_ID: <your-client-id>
       start: node server.js
